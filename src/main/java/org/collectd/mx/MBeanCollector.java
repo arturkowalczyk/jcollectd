@@ -277,12 +277,16 @@ public class MBeanCollector implements Runnable {
             if (name.isPattern()) {
                 Set<ObjectName> beans;
                 try {
-                    beans = 
-                        _sender.getMBeanServerConnection().queryNames(name, null);
+                    beans =  _sender.getMBeanServerConnection().queryNames(name, null);
                 } catch (Exception e) {
                     _log.warning("queryNames(" + name + "): " + e);
                     return;
                 }
+
+                if (beans == null || beans.isEmpty()) {
+                    _log.warning("Query returns no results: " + name);
+                }
+
                 for (ObjectName oname : beans) {
                     run(query, oname);
                 }

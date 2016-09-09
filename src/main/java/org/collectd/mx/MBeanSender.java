@@ -159,6 +159,9 @@ public class MBeanSender implements Dispatcher {
         MBeanCollector collector = new MBeanCollector();
         collector.addMBean(name);
         schedule(collector);
+
+        _log.info("Scheduled: " + name);
+
         return collector;
     }
 
