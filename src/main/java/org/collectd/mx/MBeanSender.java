@@ -34,7 +34,11 @@ import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
 
+import org.collectd.mx.java.org.collectd.MBeanServerConnectionFactory;
 import org.collectd.protocol.Network;
 import org.collectd.api.Notification;
 import org.collectd.protocol.Dispatcher;
@@ -46,15 +50,10 @@ import org.collectd.api.ValueList;
  * Process -javaagent configuration and schedule MBeanCollector objects.
  */
 public class MBeanSender implements Dispatcher {
-    private static final Logger _log =
-        Logger.getLogger(MBeanSender.class.getName());
+    private static final Logger _log = Logger.getLogger(MBeanSender.class.getName());
     private static final String UDP = "udp";
     private static final String PSEP = "://";
-    private static final String RUNTIME_NAME =
-        "java.lang:type=Runtime";
-
-    private MBeanServerConnection _bs =
-        ManagementFactory.getPlatformMBeanServer();
+    private static final String RUNTIME_NAME = "java.lang:type=Runtime";
 
     private ScheduledExecutorService _scheduler =
         Executors.newScheduledThreadPool(1, new ThreadFactory() {
@@ -66,19 +65,19 @@ public class MBeanSender implements Dispatcher {
             }
         });
 
-    private Map<String,Sender> _senders =
-        new HashMap<String,Sender>();
+    private Map<String,Sender> _senders = new HashMap<String,Sender>();
 
     private MBeanConfig _config = new MBeanConfig();
 
     private String _instanceName;
+    private MBeanServerConnectionFactory factory = new MBeanServerConnectionFactory();
 
     public void setMBeanServerConnection(MBeanServerConnection server) {
-        _bs = server;
+        factory = new MBeanServerConnectionFactory(server);
     }
 
     public MBeanServerConnection getMBeanServerConnection() {
-        return _bs;
+        return factory.getInstance();
     }
 
     private String getRuntimeName() {
@@ -222,6 +221,9 @@ public class MBeanSender implements Dispatcher {
                 scheduleMBean(b);
             }
         }
+
+        final String remoteWildfly = props.getProperty("jcd.wildfly");
+        this.factory = new MBeanServerConnectionFactory(remoteWildfly);
     }
 
     protected void init(String args) {

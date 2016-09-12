@@ -103,6 +103,10 @@ jcd.properties file:
   **239.192.74.66:25826**.  Example:
 
         jcd.dest=udp://localhost:25826
+        
+* jcd.wildfly - Remote JMX connection. If not defined then the agent uses a local MBeanServerConnection
+
+        jcd.wildfly=service:jmx:http-remoting-jmx://127.0.0.1:9990
 
 * jcd.tmpl - jcollectd.xml MBean filter templates (see etc/).  Example:
 
